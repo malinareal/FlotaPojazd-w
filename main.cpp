@@ -1,4 +1,8 @@
 #include <iostream>
+#include "class/Pojazdy.h"
+#include "class/Samochod.h"
+#include "class/Motocykl.h"
+#include "class/Dostawczy.h"
 using namespace std;
 
 // ======== PLACEHOLDER FUNKCJI ========
