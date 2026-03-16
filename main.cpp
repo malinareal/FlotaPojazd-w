@@ -1,8 +1,13 @@
+#include <filesystem>
 #include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include "historia/Historia.h"
 #include "class/Pojazdy.h"
-#include "class/Samochod.h"
-#include "class/Motocykl.h"
-#include "class/Dostawczy.h"
+#include "json/JsonDB.h"
+
 using namespace std;
 
 // ======== PLACEHOLDER FUNKCJI ========
@@ -19,8 +24,84 @@ void sprawdzPojazdy() {
     cout << "Funkcja sprawdzPojazdy() jeszcze nie jest zaimplementowana.\n";
 }
 
-void dodajPojazd() {
-    cout << "Funkcja dodajPojazd() jeszcze nie jest zaimplementowana.\n";
+void dodajPojazd()
+{
+    int typ;
+
+    cout << "Typ pojazdu:\n";
+    cout << "1 - Samochod\n";
+    cout << "2 - Motocykl\n";
+    cout << "3 - Dostawczy\n";
+
+    cin >> typ;
+
+    int id;
+    string marka;
+    string model;
+    int rok;
+    int przebieg;
+    string status;
+
+    cout << "ID: ";
+    cin >> id;
+
+    cout << "Marka: ";
+    cin >> marka;
+
+    cout << "Model: ";
+    cin >> model;
+
+    cout << "Rok: ";
+    cin >> rok;
+
+    cout << "Przebieg: ";
+    cin >> przebieg;
+
+    cout << "Status: ";
+    cin >> status;
+
+    if (typ == 1)
+    {
+        int drzwi;
+        string silnik;
+
+        cout << "Silnik: ";
+        cin >> silnik;
+
+        cout << "Liczba drzwi: ";
+        cin >> drzwi;
+
+        Samochod auto1(id, marka, model, rok, przebieg, status, drzwi, silnik);
+        JsonDB::saveVehicle(auto1);
+    }
+
+    else if (typ == 2)
+    {
+        int pojemnosc;
+
+        cout << "Pojemnosc silnika: ";
+        cin >> pojemnosc;
+
+        Motocykl moto1(id, marka, model, rok, przebieg, status, pojemnosc);
+        JsonDB::saveVehicle(moto1);
+    }
+
+    else if (typ == 3)
+    {
+        int ladownosc;
+        string silnik;
+
+        cout << "Silnik: ";
+        cin >> silnik;
+
+        cout << "Ladownosc: ";
+        cin >> ladownosc;
+
+        Dostawczy van1(id, marka, model, rok, przebieg, status, ladownosc, silnik);
+        JsonDB::saveVehicle(van1);
+    }
+
+    cout << "Pojazd zapisany\n";
 }
 
 void usunPojazd() {
@@ -58,7 +139,7 @@ void pokazMenu() {
 // ======== MAIN ========
 
 int main() {
-
+    cout << std::filesystem::current_path() << endl;
     int wybor;
 
     do {
