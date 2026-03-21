@@ -1,2 +1,2 @@
-{"typ":"samochod","id":1,"marka":"1","model":"1","rok":1,"przebieg":1,"status":"1","silnik":"1","drzwi":1}
+{"typ":"samochod","id":1,"marka":"1","model":"1","rok":1,"przebieg":123456,"status":"1","silnik":"1","drzwi":1}
 {"typ":"motocykl","id":51,"marka":"test","model":"test","rok":2137,"przebieg":312,"status":"Gotowy","pojemnosc":641}
