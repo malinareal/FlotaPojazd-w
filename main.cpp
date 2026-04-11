@@ -155,7 +155,92 @@ void dodajPojazd()
 }
 
 void usunPojazd() {
-    cout << "Funkcja usunPojazd() jeszcze nie jest zaimplementowana.\n";
+    ifstream file("json/pojazdy.json");
+
+    if (!file.is_open()) {
+        cout << "Nie mozna otworzyc pliku!\n";
+        return;
+    }
+
+    string linia, calosc;
+    while (getline(file, linia)) {
+        calosc += linia + "\n";
+    }
+    file.close();
+
+    // Listowanie pojazdów
+    cout << "\n===== LISTA POJAZDOW =====\n";
+    size_t pos = 0;
+    while ((pos = calosc.find("{", pos)) != string::npos) {
+        size_t end = calosc.find("}", pos);
+        string obiekt = calosc.substr(pos, end - pos);
+
+        auto znajdz = [&](string klucz) {
+            size_t start = obiekt.find("\"" + klucz + "\"");
+            if (start == string::npos) return string("");
+            start = obiekt.find(":", start) + 1;
+            while (obiekt[start] == ' ' || obiekt[start] == '\"') start++;
+            size_t stop = start;
+            if (obiekt[start - 1] == '\"') {
+                stop = obiekt.find("\"", start);
+            } else {
+                while (stop < obiekt.size() && isdigit(obiekt[stop])) stop++;
+            }
+            return obiekt.substr(start, stop - start);
+        };
+
+        cout << "ID: " << znajdz("id")
+             << " | " << znajdz("marka") << " " << znajdz("model")
+             << " (" << znajdz("typ") << ")\n";
+
+        pos = end + 1;
+    }
+
+    // Wybór ID
+    string szukaneID;
+    cout << "\nPodaj ID pojazdu do usuniecia: ";
+    cin >> szukaneID;
+
+    // Usuwanie — budujemy nowy string bez danego obiektu
+    string wynik;
+    pos = 0;
+    bool znaleziono = false;
+
+    while ((pos = calosc.find("{", pos)) != string::npos) {
+        size_t end = calosc.find("}", pos);
+        string obiekt = calosc.substr(pos, end - pos + 1);
+
+        // Wyciągnij id z obiektu
+        size_t idPos = obiekt.find("\"id\"");
+        string id = "";
+        if (idPos != string::npos) {
+            size_t start = obiekt.find(":", idPos) + 1;
+            while (obiekt[start] == ' ') start++;
+            size_t stop = start;
+            while (isdigit(obiekt[stop])) stop++;
+            id = obiekt.substr(start, stop - start);
+        }
+
+        if (id == szukaneID) {
+            znaleziono = true;
+            // pomijamy ten obiekt
+        } else {
+            wynik += obiekt + "\n";
+        }
+
+        pos = end + 1;
+    }
+
+    if (!znaleziono) {
+        cout << "Nie znaleziono pojazdu o ID: " << szukaneID << "\n";
+        return;
+    }
+
+    ofstream out("json/pojazdy.json");
+    out << wynik;
+    out.close();
+
+    cout << "Pojazd o ID " << szukaneID << " zostal usuniety.\n";
 }
 
 void historiaWypozyczen() {
