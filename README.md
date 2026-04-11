@@ -3,6 +3,7 @@ Projekt zaliczeniowy C++
 Temat 5: System zarządzania flotą samochodów (wypożyczalnia)
 
 # Diagram
+![Diagram UML](src/diagram.jpg)
 
 
 # Do it list:
