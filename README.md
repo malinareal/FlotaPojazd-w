@@ -16,31 +16,31 @@ Konsolowy system zarządzania flotą pojazdów napisany w C++. Umożliwia komple
 # Funkcjonalności
 Zarządzanie pojazdami
 
-Dodawanie i usuwanie pojazdów trzech typów: samochód, motocykl, pojazd dostawczy
-Śledzenie statusu pojazdu: dostępny / wypożyczony / serwis
-Aktualizacja przebiegu z walidacją (nowy przebieg musi być wyższy od aktualnego)
-Historia serwisowa z opisem usterek
+Dodawanie i usuwanie pojazdów trzech typów: samochód, motocykl, pojazd dostawczy  
+Śledzenie statusu pojazdu: dostępny / wypożyczony / serwis  
+Aktualizacja przebiegu z walidacją (nowy przebieg musi być wyższy od aktualnego)  
+Historia serwisowa z opisem usterek  
 
 Zarządzanie klientami
 
-Rejestracja klientów z danymi osobowymi i numerem prawa jazdy
+Rejestracja klientów z danymi osobowymi i numerem prawa jazdy  
 Wyszukiwanie klientów po ID
 
 Wypożyczenia
 
-Rejestrowanie nowych wypożyczeń z datami i kosztem
-Zwrot pojazdu — automatyczna zmiana statusu na dostępny
-Zabezpieczenia przed wypożyczeniem niedostępnego pojazdu lub usunięciem wypożyczonego
+Rejestrowanie nowych wypożyczeń z datami i kosztem  
+Zwrot pojazdu — automatyczna zmiana statusu na dostępny  
+Zabezpieczenia przed wypożyczeniem niedostępnego pojazdu lub usunięciem wypożyczonego  
 
 Statystyki
 
-Raport wszystkich wypożyczeń z podsumowaniem przychodów
-Zestawienie najczęstszych usterek w historii serwisowej
+Raport wszystkich wypożyczeń z podsumowaniem przychodów  
+Zestawienie najczęstszych usterek w historii serwisowej  
 
 # Skład zespołu:
-Igor Rudziński
-Patryk Bogdał
-Patryk Malarz
-Jakub Sołtys
+Igor Rudziński  
+Patryk Bogdał  
+Patryk Malarz  
+Jakub Sołtys  
 
 
