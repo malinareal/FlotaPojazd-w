@@ -17,7 +17,7 @@ void wypozyczPojazd() {
 }
 
 void zwrocPojazd() {
-    cout << "Funkcja zwrocPojazd() jeszcze nie jest zaimplementowana.\n";
+    cout << "Funkcja zwrocPojazd() jeszcze niie jest zaimplementowana.\n";
 }
 
 void sprawdzPojazdy() {

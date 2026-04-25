@@ -1,2 +1,3 @@
-{"typ":"samochod","id":1,"marka":"1","model":"1","rok":1,"przebieg":123456,"status":"1","silnik":"1","drzwi":1}
-{"typ":"motocykl","id":51,"marka":"test","model":"test","rok":2137,"przebieg":312,"status":"Gotowy","pojemnosc":641}
+{"typ":"motocykl","id":1,"marka":"subaru","model":"gg","rok":1997,"przebieg":423908,"status":"dostepny","pojemnosc":7655}
+{"typ":"samochod","id":10,"marka":"BMW","model":"M3","rok":2003,"przebieg":765347,"status":"wypozyczony","silnik":"V6","drzwi":5}
+{"typ":"samochod","id":11,"marka":"electrolux","model":"pralkozmywalka","rok":2019,"przebieg":0,"status":"dostepny","silnik":"2.0","drzwi":3}
