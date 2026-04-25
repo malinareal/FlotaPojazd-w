@@ -1,0 +1,4 @@
+{"idWypozyczenia":1,"idPojazdu":1,"idKlienta":1,"dataOd":"2026-04-25","dataDo":"2026-05-01","koszt":5489.000000,"oddany":true}
+{"idWypozyczenia":2,"idPojazdu":1,"idKlienta":1,"dataOd":"2343-11-11","dataDo":"4343-22-22","koszt":23532.000000,"oddany":true}
+{"idWypozyczenia":3,"idPojazdu":1,"idKlienta":1,"dataOd":"2026-04-25","dataDo":"2026-04-31","koszt":888.000000,"oddany":true}
+{"idWypozyczenia":4,"idPojazdu":10,"idKlienta":1,"dataOd":"2026-04-25","dataDo":"2026-04-31","koszt":32490.000000,"oddany":false}
