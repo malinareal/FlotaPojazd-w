@@ -52,7 +52,7 @@ public:
         cout << " 3. Zwroc pojazd\n";
         cout << " 4. Dodaj pojazd\n";
         cout << " 5. Usun pojazd\n";
-        cout << " 6. Historia wypozyczen\n";
+        cout << " 6. Historia Wypozyczen\n";
         cout << " 7. Status techniczny pojazdow\n";
         cout << " 8. Aktualizuj przebieg\n";
         cout << " 9. Dodaj klienta\n";
@@ -258,7 +258,7 @@ public:
             wybor = pobierzWyborUzytkownika();
 
             switch (wybor) {
-                case 1:  sprawdzPojazdy();          break;
+                case 1:  sprawdzPojazdy();           break;
                 case 2:  wypozyczPojazd();           break;
                 case 3:  zwrocPojazd();              break;
                 case 4:  dodajPojazd();              break;
