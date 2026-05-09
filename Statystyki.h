@@ -12,7 +12,7 @@ using namespace std;
 class Statystyki {
 public:
 
-    static void generujRaportMiesieczny(const vector<Wypozyczenie>& wypozyczenia) {
+    static void generujraport(const vector<Wypozyczenie>& wypozyczenia) {
         cout << "\n===== RAPORT WYPOZYCZEN =====\n";
         if (wypozyczenia.empty()) {
             cout << "Brak wypozyczen w systemie.\n";

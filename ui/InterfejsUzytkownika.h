@@ -52,7 +52,7 @@ public:
         cout << " 3. Zwroc pojazd\n";
         cout << " 4. Dodaj pojazd\n";
         cout << " 5. Usun pojazd\n";
-        cout << " 6. Historia Wypozyczen\n";
+        cout << " 6. Wyświetl historie Wypozyczen\n";
         cout << " 7. Status techniczny pojazdow\n";
         cout << " 8. Aktualizuj przebieg\n";
         cout << " 9. Dodaj klienta\n";
@@ -190,8 +190,8 @@ public:
         menedzer.zwrocPojazd(id);
     }
 
-    void historiaWypozyczen() const {
-        Statystyki::generujRaportMiesieczny(menedzer.getWypozyczenia());
+    void historia() const {
+        Statystyki::generujraport(menedzer.getWypozyczenia());
     }
 
     void sprawdzStatusTechniczny() const {
@@ -245,7 +245,7 @@ public:
     // ========== STATYSTYKI ==========
 
     void pokazStatystyki() const {
-        Statystyki::generujRaportMiesieczny(menedzer.getWypozyczenia());
+        Statystyki::generujraport(menedzer.getWypozyczenia());
         Statystyki::pokazNajczestszUsterki(menedzer.getPojazdy());
     }
 
@@ -263,7 +263,7 @@ public:
                 case 3:  zwrocPojazd();              break;
                 case 4:  dodajPojazd();              break;
                 case 5:  usunPojazd();               break;
-                case 6:  historiaWypozyczen();       break;
+                case 6:  historia();                 break;
                 case 7:  sprawdzStatusTechniczny();  break;
                 case 8:  aktualizujPrzebieg();       break;
                 case 9:  dodajKlienta();             break;
