@@ -60,6 +60,11 @@ public:
 
     // Zwraca false jesli ID juz istnieje
     bool dodajPojazd(Pojazd* p) {
+        // Ochrona przed nullem
+        if (p == nullptr) {
+            cout << "Blad: Proba dodania nieistniejacego obiektu (null).\n";
+            return false;
+        }
         if (znajdzPojazd(p->getId()) != nullptr) {
             cout << "Blad: pojazd o ID " << p->getId() << " juz istnieje.\n";
             delete p;   // zapobiega wyciekowi pamieci
