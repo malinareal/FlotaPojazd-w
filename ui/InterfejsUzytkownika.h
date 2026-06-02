@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <limits>
+#include <stdexcept>
 #include "../MenedzerFloty.h"
 #include "../Statystyki.h"
 using namespace std;
@@ -89,9 +90,9 @@ public:
         cout << "\n===== LISTA POJAZDOW =====\n";
         for (const Pojazd* p : pojazdy) {
             cout << "ID: "       << p->getId()
-                 << " | Typ: "  << p->getTyp()
-                 << " | "       << p->getMarka() << " " << p->getModel()
-                 << " | Rok: "  << p->getRok()
+                 << " | Typ: "   << p->getTyp()
+                 << " | "        << p->getMarka() << " " << p->getModel()
+                 << " | Rok: "   << p->getRok()
                  << " | Przebieg: " << p->getPrzebieg() << " km"
                  << " | Status: "   << p->getStatus() << "\n";
         }
@@ -141,12 +142,13 @@ public:
             }
 
             if (nowyPojazd != nullptr) {
-                dodano = menedzer.dodajPojazd(nowyPojazd);
-                
-                if (dodano) {
+                try {
+                    menedzer.dodajPojazd(nowyPojazd);
                     wyswietlKomunikat("Sukces! Pojazd zostal dodany do floty.");
-                } else {                
-                    wyswietlKomunikat("Wystapil blad podczas dodawania. Wprowadz dane poprawnie.");
+                    dodano = true; 
+                } catch (const exception& e) {                
+                    wyswietlKomunikat(string("Wystapil blad: ") + e.what());
+                    wyswietlKomunikat("Wprowadz dane poprawnie.");
                 }
             }
         }
@@ -156,12 +158,18 @@ public:
         sprawdzPojazdy();
         if (menedzer.getPojazdy().empty()) return;
         int id = pobierzInt("\nPodaj ID pojazdu do usuniecia: ");
-        menedzer.usunPojazd(id);
+        
+        try {
+            menedzer.usunPojazd(id);
+            wyswietlKomunikat("Sukces! Pojazd zostal usuniety.");
+        } catch (const exception& e) {
+            wyswietlKomunikat(string("Blad: ") + e.what());
+        }
     }
 
     void wypozyczPojazd() {
         // Pokazujemy tylko dostepne pojazdy
-        vector<Pojazd*> dostepne = menedzer.wyszukajDostepne();
+        vector<const Pojazd*> dostepne = menedzer.wyszukajDostepne();
         if (dostepne.empty()) {
             wyswietlKomunikat("Brak dostepnych pojazdow.");
             return;
@@ -189,7 +197,12 @@ public:
 
         double koszt = pobierzDouble("Koszt calkowity (PLN): ");
 
-        menedzer.wypozyczPojazd(idKlienta, idPojazdu, dataOd, dataDo, koszt);
+        try {
+            menedzer.wypozyczPojazd(idKlienta, idPojazdu, dataOd, dataDo, koszt);
+            wyswietlKomunikat("Sukces! Wypozyczenie zostalo zarejestrowane.");
+        } catch (const exception& e) {
+            wyswietlKomunikat(string("Blad: ") + e.what());
+        }
     }
 
     void zwrocPojazd() {
@@ -215,7 +228,13 @@ public:
         }
 
         int id = pobierzInt("\nID wypozyczenia do zwrotu: ");
-        menedzer.zwrocPojazd(id);
+        
+        try {
+            menedzer.zwrocPojazd(id);
+            wyswietlKomunikat("Sukces! Pojazd zostal zwrocony do floty.");
+        } catch (const exception& e) {
+            wyswietlKomunikat(string("Blad: ") + e.what());
+        }
     }
 
     void historia() const {
@@ -251,7 +270,13 @@ public:
 
         int id           = pobierzInt("\nID pojazdu: ");
         int nowyPrzebieg = pobierzInt("Nowy przebieg (km): ");
-        menedzer.zaktualizujPrzebieg(id, nowyPrzebieg);
+        
+        try {
+            menedzer.zaktualizujPrzebieg(id, nowyPrzebieg);
+            wyswietlKomunikat("Sukces! Przebieg zostal zaktualizowany.");
+        } catch (const exception& e) {
+            wyswietlKomunikat(string("Blad: ") + e.what());
+        }
     }
 
     // ========== KLIENCI ==========
@@ -282,11 +307,12 @@ public:
                 continue; 
             }
 
-            if (menedzer.dodajKlienta(Klient(id, imie, nazwisko, nrPrawaJazdy))) {
+            try {
+                menedzer.dodajKlienta(Klient(id, imie, nazwisko, nrPrawaJazdy));
                 wyswietlKomunikat("Sukces! Klient zostal dodany.");
                 dodano = true; 
-            } else {
-                wyswietlKomunikat("Wystapil blad podczas dodawania klienta. Sprobuj ponownie.");
+            } catch (const exception& e) {
+                wyswietlKomunikat(string("Blad podczas dodawania klienta: ") + e.what());
             }
         }
     }
