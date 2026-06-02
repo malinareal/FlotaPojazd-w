@@ -42,6 +42,15 @@ private:
         }
     }
 
+    // NOWA FUNKCJA: Bezpieczne pobieranie tekstu ze spacjami (np. "Aston Martin", "Jan Maria")
+    string pobierzTekst(const string& prompt) const {
+        string wejscie;
+        cout << prompt;
+        // std::ws usuwa z bufora 'entery' pozostale po cin >>, chroniac przed bledem
+        getline(cin >> ws, wejscie); 
+        return wejscie;
+    }
+
 public:
     InterfejsUzytkownika(MenedzerFloty& m) : menedzer(m) {}
 
@@ -52,7 +61,7 @@ public:
         cout << " 3. Zwroc pojazd\n";
         cout << " 4. Dodaj pojazd\n";
         cout << " 5. Usun pojazd\n";
-        cout << " 6. Wyświetl historie Wypozyczen\n";
+        cout << " 6. Wyswietl historie Wypozyczen\n";
         cout << " 7. Status techniczny pojazdow\n";
         cout << " 8. Aktualizuj przebieg\n";
         cout << " 9. Dodaj klienta\n";
@@ -89,37 +98,57 @@ public:
     }
 
     void dodajPojazd() {
-        int typ = pobierzInt("Typ pojazdu (1-Samochod, 2-Motocykl, 3-Dostawczy): ");
+        bool dodano = false;
 
-        // ID generowane automatycznie - max istniejacych + 1
-        int    id = menedzer.nastepneIdPojazdu();
-        cout << "Nowe ID pojazdu: " << id << "\n";
-        string marka, model, status;
+        while (!dodano) {
+            cout << "\n--- DODAWANIE NOWEGO POJAZDU ---\n";
+            int typ = pobierzInt("Typ pojazdu (1-Samochod, 2-Motocykl, 3-Dostawczy, 0-Anuluj): ");
+            
+            if (typ == 0) {
+                wyswietlKomunikat("Anulowano dodawanie pojazdu.");
+                return; 
+            }
 
-        cout << "Marka: ";   cin >> marka;
-        cout << "Model: ";   cin >> model;
-        int rok      = pobierzInt("Rok produkcji: ");
-        int przebieg = pobierzInt("Przebieg (km): ");
-        cout << "Status (dostepny/serwis): "; cin >> status;
+            int id = menedzer.nastepneIdPojazdu();
+            cout << "Nowe ID pojazdu: " << id << "\n";
 
-        if (typ == 1) {
-            string silnik;
-            cout << "Silnik (np. 2.0 TDI): "; cin >> silnik;
-            int drzwi = pobierzInt("Liczba drzwi: ");
-            menedzer.dodajPojazd(new Samochod(id, marka, model, rok, przebieg, status, drzwi, silnik));
+            // Uzywamy nowej funkcji pobierzTekst()
+            string marka  = pobierzTekst("Marka: ");
+            string model  = pobierzTekst("Model: ");
+            int rok       = pobierzInt("Rok produkcji: ");
+            int przebieg  = pobierzInt("Przebieg (km): ");
+            string status = pobierzTekst("Status (dostepny/serwis): ");
 
-        } else if (typ == 2) {
-            int pojemnosc = pobierzInt("Pojemnosc silnika (cm3): ");
-            menedzer.dodajPojazd(new Motocykl(id, marka, model, rok, przebieg, status, pojemnosc));
+            Pojazd* nowyPojazd = nullptr; 
 
-        } else if (typ == 3) {
-            string silnik;
-            cout << "Silnik (np. 1.9 TDI): "; cin >> silnik;
-            int ladownosc = pobierzInt("Ladownosc (kg): ");
-            menedzer.dodajPojazd(new Dostawczy(id, marka, model, rok, przebieg, status, ladownosc, silnik));
+            if (typ == 1) {
+                string silnik = pobierzTekst("Silnik (np. 2.0 TDI): ");
+                int drzwi = pobierzInt("Liczba drzwi: ");
+                nowyPojazd = new Samochod(id, marka, model, rok, przebieg, status, drzwi, silnik);
 
-        } else {
-            wyswietlKomunikat("Nieznany typ pojazdu - anulowano.");
+            } else if (typ == 2) {
+                int pojemnosc = pobierzInt("Pojemnosc silnika (cm3): ");
+                nowyPojazd = new Motocykl(id, marka, model, rok, przebieg, status, pojemnosc);
+
+            } else if (typ == 3) {
+                string silnik = pobierzTekst("Silnik (np. 1.9 TDI): ");
+                int ladownosc = pobierzInt("Ladownosc (kg): ");
+                nowyPojazd = new Dostawczy(id, marka, model, rok, przebieg, status, ladownosc, silnik);
+
+            } else {
+                wyswietlKomunikat("Nieznany typ pojazdu. Sprobuj ponownie.");
+                continue; 
+            }
+
+            if (nowyPojazd != nullptr) {
+                dodano = menedzer.dodajPojazd(nowyPojazd);
+                
+                if (dodano) {
+                    wyswietlKomunikat("Sukces! Pojazd zostal dodany do floty.");
+                } else {                
+                    wyswietlKomunikat("Wystapil blad podczas dodawania. Wprowadz dane poprawnie.");
+                }
+            }
         }
     }
 
@@ -155,9 +184,8 @@ public:
         int idPojazdu = pobierzInt("\nID pojazdu: ");
         int idKlienta = pobierzInt("ID klienta: ");
 
-        string dataOd, dataDo;
-        cout << "Data od  (RRRR-MM-DD): "; cin >> dataOd;
-        cout << "Data do  (RRRR-MM-DD): "; cin >> dataDo;
+        string dataOd = pobierzTekst("Data od  (RRRR-MM-DD): ");
+        string dataDo = pobierzTekst("Data do  (RRRR-MM-DD): ");
 
         double koszt = pobierzDouble("Koszt calkowity (PLN): ");
 
@@ -229,17 +257,38 @@ public:
     // ========== KLIENCI ==========
 
     void dodajKlienta() {
-        // ID generowane automatycznie - max istniejacych + 1
-        int id = menedzer.nastepneIdKlienta();
-        cout << "Nowe ID klienta: " << id << "\n";
-        string imie, nazwisko, nrPrawaJazdy;
+        bool dodano = false;
 
-        cout << "Imie: ";           cin >> imie;
-        cout << "Nazwisko: ";       cin >> nazwisko;
-        cout << "Nr prawa jazdy: "; cin >> nrPrawaJazdy;
+        while (!dodano) {
+            cout << "\n--- DODAWANIE NOWEGO KLIENTA ---\n";
+            cout << "(Wpisz '0' jako imie, aby anulowac)\n";
 
-        if (menedzer.dodajKlienta(Klient(id, imie, nazwisko, nrPrawaJazdy)))
-            wyswietlKomunikat("Klient dodany.");
+            int id = menedzer.nastepneIdKlienta();
+            cout << "Nowe ID klienta: " << id << "\n";
+
+            // Uzywamy nowej funkcji pobierzTekst()
+            string imie = pobierzTekst("Imie: ");
+            
+            if (imie == "0") {
+                wyswietlKomunikat("Anulowano dodawanie klienta.");
+                return;
+            }
+
+            string nazwisko     = pobierzTekst("Nazwisko: ");
+            string nrPrawaJazdy = pobierzTekst("Nr prawa jazdy: ");
+
+            if (imie.length() < 2 || nazwisko.length() < 2) {
+                wyswietlKomunikat("Blad: Imie i nazwisko musza miec przynajmniej 2 znaki. Sprobuj ponownie.");
+                continue; 
+            }
+
+            if (menedzer.dodajKlienta(Klient(id, imie, nazwisko, nrPrawaJazdy))) {
+                wyswietlKomunikat("Sukces! Klient zostal dodany.");
+                dodano = true; 
+            } else {
+                wyswietlKomunikat("Wystapil blad podczas dodawania klienta. Sprobuj ponownie.");
+            }
+        }
     }
 
     // ========== STATYSTYKI ==========
