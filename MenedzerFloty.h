@@ -7,11 +7,21 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <stdexcept>
+#include <algorithm>
+
 #include "class/Pojazdy.h"
 #include "class/Klient.h"
 #include "class/Wypozyczenie.h"
 #include "json/BazaDanych.h"
+
 using namespace std;
+
+class MenedzerFlotyError : public std::runtime_error {
+public:
+    explicit MenedzerFlotyError(const string& message) 
+        : std::runtime_error(message) {}
+};
 
 // ============================================================
 //  Kontroler zarzadzajacy cala flota.
@@ -25,10 +35,12 @@ private:
 
     // Zwraca najwyzsze uzyte ID wypozyczenia (do generowania nowego)
     int nastepneIdWypozyczenia() const {
-        int max = 0;
-        for (const Wypozyczenie& w : wypozyczenia)
-            if (w.idWypozyczenia > max) max = w.idWypozyczenia;
-        return max + 1;
+        if (wypozyczenia.empty()) return 1;
+        auto it = max_element(wypozyczenia.begin(), wypozyczenia.end(),
+            [](const Wypozyczenie& a, const Wypozyczenie& b) {
+                return a.idWypozyczenia < b.idWypozyczenia;
+            });
+        return it->idWypozyczenia + 1;
     }
 
 public:
@@ -42,118 +54,123 @@ public:
     ~MenedzerFloty() {
         for (Pojazd* p : pojazdy) delete p;
     }
+
+    MenedzerFloty(const MenedzerFloty&) = delete;
+    MenedzerFloty& operator=(const MenedzerFloty&) = delete;
+
     int nastepneIdPojazdu() const {
-        int maxId = 0;
-        for (const Pojazd* p : pojazdy)
-            if (p->getId() > maxId) maxId = p->getId();
-        return maxId + 1;
+        if (pojazdy.empty()) return 1;
+        auto it = max_element(pojazdy.begin(), pojazdy.end(),
+            [](const Pojazd* a, const Pojazd* b) {
+                return a->getId() < b->getId();
+            });
+        return (*it)->getId() + 1;
     }
 
     int nastepneIdKlienta() const {
-        int maxId = 0;
-        for (const Klient& k : klienci)
-            if (k.idKlienta > maxId) maxId = k.idKlienta;
-        return maxId + 1;
+        if (klienci.empty()) return 1;
+        auto it = max_element(klienci.begin(), klienci.end(),
+            [](const Klient& a, const Klient& b) {
+                return a.idKlienta < b.idKlienta;
+            });
+        return it->idKlienta + 1;
     }
 
     // ========== POJAZDY ==========
 
     // Zwraca false jesli ID juz istnieje
-    bool dodajPojazd(Pojazd* p) {
+    void dodajPojazd(Pojazd* p) {
         // Ochrona przed nullem
         if (p == nullptr) {
-            cout << "Blad: Proba dodania nieistniejacego obiektu (null).\n";
-            return false;
+            throw MenedzerFlotyError("Proba dodania nieistniejacego obiektu (null).");
         }
         if (znajdzPojazd(p->getId()) != nullptr) {
-            cout << "Blad: pojazd o ID " << p->getId() << " juz istnieje.\n";
             delete p;   // zapobiega wyciekowi pamieci
-            return false;
+            throw MenedzerFlotyError("Pojazd o ID " + to_string(p->getId()) + " juz istnieje.");
         }
         pojazdy.push_back(p);
         BazaDanych::zapiszPojazd(p);
-        return true;
     }
 
-    bool usunPojazd(int id) {
-        for (auto it = pojazdy.begin(); it != pojazdy.end(); ++it) {
-            if ((*it)->getId() == id) {
-                // Nie mozna usunac wypozyczonego pojazdu
-                if ((*it)->getStatus() == "wypozyczony") {
-                    cout << "Blad: pojazd jest aktualnie wypozyczony.\n";
-                    return false;
-                }
-                delete *it;
-                pojazdy.erase(it);
-                BazaDanych::zapiszWszystkoDoJSON(pojazdy, klienci, wypozyczenia);
-                cout << "Pojazd o ID " << id << " zostal usuniety.\n";
-                return true;
-            }
+    void usunPojazd(int id) {
+        auto it = find_if(pojazdy.begin(), pojazdy.end(), 
+            [id](Pojazd* p) { return p->getId() == id; });
+
+        if (it == pojazdy.end()) {
+            throw MenedzerFlotyError("Nie znaleziono pojazdu o ID: " + to_string(id));
         }
-        cout << "Nie znaleziono pojazdu o ID: " << id << "\n";
-        return false;
+        // Nie mozna usunac wypozyczonego pojazdu
+        if ((*it)->getStatus() == "wypozyczony") {
+            throw MenedzerFlotyError("Nie mozna usunac pojazdu, ktory jest aktualnie wypozyczony.");
+        }
+
+        delete *it;
+        pojazdy.erase(it);
+        BazaDanych::zapiszWszystkoDoJSON(pojazdy, klienci, wypozyczenia);
     }
 
     // Zwraca tylko pojazdy ze statusem "dostepny"
-    vector<Pojazd*> wyszukajDostepne() const {
-        vector<Pojazd*> dostepne;
-        for (Pojazd* p : pojazdy)
+    vector<const Pojazd*> wyszukajDostepne() const {
+        vector<const Pojazd*> dostepne;
+        for (const Pojazd* p : pojazdy) {
             if (p->jestDostepny()) dostepne.push_back(p);
+        }
         return dostepne;
     }
 
     const vector<Pojazd*>& getPojazdy() const { return pojazdy; }
 
-    Pojazd* znajdzPojazd(int id) const {
-        for (Pojazd* p : pojazdy)
-            if (p->getId() == id) return p;
-        return nullptr;
+    Pojazd* znajdzPojazd(int id) {
+        auto it = find_if(pojazdy.begin(), pojazdy.end(), 
+            [id](Pojazd* p) { return p->getId() == id; });
+        return (it != pojazdy.end()) ? *it : nullptr;
     }
 
-    bool zaktualizujPrzebieg(int idPojazdu, int nowyPrzebieg) {
+    const Pojazd* znajdzPojazd(int id) const {
+        auto it = find_if(pojazdy.begin(), pojazdy.end(), 
+            [id](const Pojazd* p) { return p->getId() == id; });
+        return (it != pojazdy.end()) ? *it : nullptr;
+    }
+
+    void zaktualizujPrzebieg(int idPojazdu, int nowyPrzebieg) {
         Pojazd* p = znajdzPojazd(idPojazdu);
-        if (!p) { cout << "Nie znaleziono pojazdu o ID: " << idPojazdu << "\n"; return false; }
-        if (!p->zaktualizujPrzebieg(nowyPrzebieg)) return false;
+        if (!p) throw MenedzerFlotyError("Nie znaleziono pojazdu o podanym ID.");
+        
+        if (!p->zaktualizujPrzebieg(nowyPrzebieg)) {
+            throw MenedzerFlotyError("Blad aktualizacji przebiegu.");
+        }
         BazaDanych::zapiszWszystkoDoJSON(pojazdy, klienci, wypozyczenia);
-        cout << "Przebieg zaktualizowany do " << nowyPrzebieg << " km.\n";
-        return true;
     }
 
     // ========== KLIENCI ==========
 
-    bool dodajKlienta(const Klient& k) {
+    void dodajKlienta(const Klient& k) {
         if (znajdzKlienta(k.idKlienta) != nullptr) {
-            cout << "Blad: klient o ID " << k.idKlienta << " juz istnieje.\n";
-            return false;
+            throw MenedzerFlotyError("Klient o podanym ID juz istnieje.");
         }
         klienci.push_back(k);
         BazaDanych::zapiszKlienta(k);
-        return true;
     }
 
     const vector<Klient>& getKlienci() const { return klienci; }
 
     Klient* znajdzKlienta(int id) {
-        for (Klient& k : klienci)
-            if (k.idKlienta == id) return &k;
-        return nullptr;
+        auto it = find_if(klienci.begin(), klienci.end(), 
+            [id](Klient& k) { return k.idKlienta == id; });
+        return (it != klienci.end()) ? &(*it) : nullptr;
     }
 
     // ========== WYPOZYCZENIA ==========
 
     // Rejestruje nowe wypozyczenie i zmienia status pojazdu na "wypozyczony"
-    bool wypozyczPojazd(int idKlienta, int idPojazdu,
-                        const string& dataOd, const string& dataDo, double koszt) {
+    void wypozyczPojazd(int idKlienta, int idPojazdu, const string& dataOd, const string& dataDo, double koszt) {
         Pojazd* p = znajdzPojazd(idPojazdu);
         Klient* k = znajdzKlienta(idKlienta);
 
-        if (!p) { cout << "Blad: pojazd o ID " << idPojazdu << " nie istnieje.\n"; return false; }
-        if (!k) { cout << "Blad: klient o ID " << idKlienta << " nie istnieje.\n"; return false; }
-        if (!p->jestDostepny()) {
-            cout << "Blad: pojazd nie jest dostepny (status: " << p->getStatus() << ").\n";
-            return false;
-        }
-        if (koszt < 0) { cout << "Blad: koszt nie moze byc ujemny.\n"; return false; }
+        if (!p) throw MenedzerFlotyError("Pojazd o podanym ID nie istnieje.");
+        if (!k) throw MenedzerFlotyError("Klient o podanym ID nie istnieje.");
+        if (!p->jestDostepny()) throw MenedzerFlotyError("Pojazd nie jest dostepny (status: " + p->getStatus() + ").");
+        if (koszt < 0) throw MenedzerFlotyError("Koszt nie moze byc ujemny.");
 
         p->setStatus("wypozyczony");
 
@@ -161,33 +178,26 @@ public:
         wypozyczenia.push_back(w);
 
         BazaDanych::zapiszWszystkoDoJSON(pojazdy, klienci, wypozyczenia);
-        cout << "Wypozyczenie zarejestrowane (ID: " << w.idWypozyczenia << ").\n";
-        return true;
     }
 
     // Rejestruje zwrot: oznacza wypozyczenie jako oddane, zmienia status pojazdu
-    bool zwrocPojazd(int idWypozyczenia) {
-        for (Wypozyczenie& w : wypozyczenia) {
-            if (w.idWypozyczenia == idWypozyczenia) {
-                if (w.oddany) {
-                    cout << "Blad: to wypozyczenie zostalo juz zwrocone.\n";
-                    return false;
-                }
-                w.oddany = true;
+    void zwrocPojazd(int idWypozyczenia) {
+        auto it = find_if(wypozyczenia.begin(), wypozyczenia.end(), 
+            [idWypozyczenia](Wypozyczenie& w) { return w.idWypozyczenia == idWypozyczenia; });
 
-                Pojazd* p = znajdzPojazd(w.idPojazdu);
-                if (p) p->setStatus("dostepny");
-
-                BazaDanych::zapiszWszystkoDoJSON(pojazdy, klienci, wypozyczenia);
-                cout << "Zwrot zarejestrowany. Pojazd ID " << w.idPojazdu << " jest teraz dostepny.\n";
-                return true;
-            }
+        if (it == wypozyczenia.end()) {
+            throw MenedzerFlotyError("Nie znaleziono wypozyczenia o podanym ID.");
         }
-        cout << "Nie znaleziono wypozyczenia o ID: " << idWypozyczenia << "\n";
-        return false;
+        if (it->oddany) {
+            throw MenedzerFlotyError("To wypozyczenie zostalo juz zwrocone.");
+        }
+
+        it->oddany = true;
+        Pojazd* p = znajdzPojazd(it->idPojazdu);
+        if (p) p->setStatus("dostepny");
+
+        BazaDanych::zapiszWszystkoDoJSON(pojazdy, klienci, wypozyczenia);
     }
 
     const vector<Wypozyczenie>& getWypozyczenia() const { return wypozyczenia; }
 };
-
-
