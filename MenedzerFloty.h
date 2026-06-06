@@ -1,8 +1,3 @@
-// ============================================================
-//  DODAJ TE DWE METODY DO KLASY MenedzerFloty (sekcja public)
-//  Zwracaja nastepne wolne ID = max istniejacych + 1
-// ============================================================
-
 #pragma once
 #include <vector>
 #include <iostream>
@@ -23,10 +18,9 @@ public:
         : std::runtime_error(message) {}
 };
 
-// ============================================================
 //  Kontroler zarzadzajacy cala flota.
 //  Trzyma dane w pamieci i synchronizuje je z plikami JSON.
-// ============================================================
+
 class MenedzerFloty {
 private:
     vector<Pojazd*>      pojazdy;
